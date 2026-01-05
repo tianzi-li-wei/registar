@@ -48,7 +48,6 @@ public:
     bool dropCourse(const std::string& studentId, const std::string& courseId) override;
 };
 
-// 实现
 MockDB::MockDB() {
     // 初始化教师数据
     teachers = {
