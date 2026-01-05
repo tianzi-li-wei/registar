@@ -8,7 +8,7 @@ public:
     int credit;
     int maxCapacity;
     int currentEnrollment;
-    std::string teacherId; // 添加教师ID字段
+    std::string teacherId;
 
     // 构造函数声明
     Course(std::string _id, std::string _name, int _credit, int _max, std::string _teacherId = "");
@@ -17,7 +17,7 @@ public:
     bool isFull() const;
     bool enrollStudent();
     void dropStudent();
-    std::string getTeacherId() const { return teacherId; } // 获取教师ID
+    std::string getTeacherId() const { return teacherId; }
 };
 
 // 实现
@@ -51,12 +51,16 @@ public:
     std::string id;
     std::string name;
     std::vector<std::string> enrolledCourseIds;
+    std::unordered_map<std::string, double> courseGrades; // 课程成绩映射
 
     // 构造函数声明
     Student(std::string _id, std::string _name);
     bool isEnrolled(const std::string& courseId) const;
     void addCourse(const std::string& courseId);
     void removeCourse(const std::string& courseId);
+    void setGrade(const std::string& courseId, double grade);
+    double getGrade(const std::string& courseId) const;
+    bool hasGrade(const std::string& courseId) const;
 };
 
 // 实现
@@ -71,6 +75,7 @@ bool Student::isEnrolled(const std::string& courseId) const {
 void Student::addCourse(const std::string& courseId) {
     if (!isEnrolled(courseId)) {
         enrolledCourseIds.push_back(courseId);
+        courseGrades[courseId] = 0.0; // 初始化成绩为0
     }
 }
 
@@ -78,7 +83,26 @@ void Student::removeCourse(const std::string& courseId) {
     auto it = std::find(enrolledCourseIds.begin(), enrolledCourseIds.end(), courseId);
     if (it != enrolledCourseIds.end()) {
         enrolledCourseIds.erase(it);
+        courseGrades.erase(courseId);
     }
+}
+
+void Student::setGrade(const std::string& courseId, double grade) {
+    if (isEnrolled(courseId)) {
+        courseGrades[courseId] = grade;
+    }
+}
+
+double Student::getGrade(const std::string& courseId) const {
+    auto it = courseGrades.find(courseId);
+    if (it != courseGrades.end()) {
+        return it->second;
+    }
+    return 0.0;
+}
+
+bool Student::hasGrade(const std::string& courseId) const {
+    return courseGrades.find(courseId) != courseGrades.end();
 }
 
 export class Teacher {
