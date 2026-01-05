@@ -1,21 +1,7 @@
-import Domain;
-import DataLayer;
-import LogicLayer;
-import Presentation;
-import std;
+import registrar;
 
-
-int main() {
-    std::shared_ptr<IDataAccess> db = std::make_shared<MockDB>();
-
-
-    auto controller = std::make_unique<CourseController>(db);
-
-
-    ConsoleView view(std::move(controller));
-
-
-    view.showMainMenu();
-
-    return 0;
+auto main() -> int {
+    Registrar registrar;
+    return registrar.exec();
 }
+

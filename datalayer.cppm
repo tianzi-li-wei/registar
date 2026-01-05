@@ -48,11 +48,11 @@ MockDB::MockDB() {
     };
 }
 
-std::vector<Course> MockDB::getAllCourses() override {
+std::vector<Course> MockDB::getAllCourses()  {
     return courses;
 }
 
-std::optional<Student> MockDB::getStudentById(const std::string& id) override {
+std::optional<Student> MockDB::getStudentById(const std::string& id) {
     for (auto& student : students) {
         if (student.id == id) {
             return student;
@@ -61,7 +61,7 @@ std::optional<Student> MockDB::getStudentById(const std::string& id) override {
     return std::nullopt;
 }
 
-bool MockDB::enrollStudent(const std::string& studentId, const std::string& courseId) override {
+bool MockDB::enrollStudent(const std::string& studentId, const std::string& courseId) {
     // 查找学生
     auto studentOpt = getStudentById(studentId);
     if (!studentOpt) return false;
@@ -92,7 +92,7 @@ bool MockDB::enrollStudent(const std::string& studentId, const std::string& cour
     return false;
 }
 
-bool MockDB::dropCourse(const std::string& studentId, const std::string& courseId) override {
+bool MockDB::dropCourse(const std::string& studentId, const std::string& courseId)  {
     // 查找学生
     auto studentOpt = getStudentById(studentId);
     if (!studentOpt) return false;

@@ -11,17 +11,17 @@ project(registar LANGUAGES CXX)
 add_executable(registar
     #math.cpp                              # 模块实现单元
     main.cpp
-    domain.cppm
-    datalayer.cppm
-    logiclayer.cppm
-    presentation.cppm
 )
 
 set(MODULE_INTERFACE_FILES
     #${MODULE_LIB_DIR1}/utils.cppm         #添加模块库的模块接口单元
     #math.cppm                             # 模块接口单元
+    datalayer.cppm
+    logiclayer.cppm
+    presentation.cppm
+    registrar.cppm
+    domain.cppm
 )
-
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})
 target_sources(registar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
     BASE_DIRS                              # 配置BASE_DIRS，用于组织构建输出目录，以便构建不同目录中(同名的)模块文件.
