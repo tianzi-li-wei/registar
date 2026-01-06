@@ -1,7 +1,9 @@
 import registrar;
+import std;
 
-auto main() -> int {
+int main()
+{
     Registrar registrar;
+
     return registrar.exec();
 }
-

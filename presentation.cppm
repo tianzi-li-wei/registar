@@ -3,7 +3,7 @@ import Domain;
 import LogicLayer;
 import std;
 using std::size_t;
-
+using std::print;
 export class ConsoleView {
 private:
     std::unique_ptr<CourseController> controller;
@@ -33,13 +33,13 @@ public:
 ConsoleView::ConsoleView(ControllerPtr ctrl) : controller(std::move(ctrl)) {}
 
 void ConsoleView::showMainMenu() {
-    std::cout << "=== 欢迎使用选课系统 ===\n";
-    std::cout << "请选择您的身份登录：\n";
-    std::cout << "1. 学生\n";
-    std::cout << "2. 教师\n";
-    std::cout << "3. 教学秘书\n";
-    std::cout << "0. 退出系统\n";
-    std::cout << "请输入选项（0-3）：";
+    print( "=== 欢迎使用选课系统 ===\n");
+    print( "请选择您的身份登录：\n");
+    print( "1. 学生\n");
+    print( "2. 教师\n");
+    print( "3. 教学秘书\n");
+    print( "0. 退出系统\n");
+    print( "请输入选项（0-3）：");
 }
 
 void ConsoleView::studentLoop() {
@@ -52,14 +52,14 @@ void ConsoleView::studentLoop() {
         }
 
         Student& student = studentOpt.value();
-        std::cout << "[学生] " << student.name << "（学号：" << student.id << "）您好！\n";
-        std::cout << "请选择操作：\n";
-        std::cout << "1. 查看可选课程列表\n";
-        std::cout << "2. 选课\n";
-        std::cout << "3. 退课\n";
-        std::cout << "4. 查看已选课程及成绩\n";
-        std::cout << "5. 返回上级菜单\n";
-        std::cout << "请输入选项（1-5）：";
+        std::cout<< "[学生] " << student.name << "（学号：" << student.id << "）您好！\n";
+        print( "请选择操作：\n");
+        print( "1. 查看可选课程列表\n");
+        print( "2. 选课\n");
+        print( "3. 退课\n");
+        print( "4. 查看已选课程及成绩\n");
+        print( "5. 返回上级菜单\n");
+        print( "请输入选项（1-5）：");
 
         std::cin >> choice;
 
@@ -74,12 +74,12 @@ void ConsoleView::studentLoop() {
                 handleDropCourse();
                 break;
             case 4:
-                std::cout << "\n已选课程及成绩：\n";
+                print( "\n已选课程及成绩：\n");
                 for (const auto& courseId : student.enrolledCourseIds) {
                     double grade = student.getGrade(courseId);
                     std::cout << "课程ID: " << courseId << " | 成绩: " << grade;
                     if (!student.hasGrade(courseId)) {
-                        std::cout << " (未录入)";
+                        print(" (未录入)");
                     }
                     std::cout << std::endl;
                 }
@@ -87,7 +87,7 @@ void ConsoleView::studentLoop() {
             case 5:
                 return;
             default:
-                std::cout << "无效选项，请重新输入！\n";
+                print( "无效选项，请重新输入！\n");
         }
     }
 }
@@ -97,25 +97,25 @@ void ConsoleView::teacherLoopImpl() {
     while (true) {
         auto teacherOpt = controller->getTeacherInfo(currentTeacherId);
         if (!teacherOpt) {
-            std::cout << "教师信息不存在！\n";
+            print( "教师信息不存在！\n");
             return;
         }
 
         Teacher& teacher = teacherOpt.value();
         std::cout << "[教师] " << teacher.name << "（工号：" << teacher.id << "）您好！\n";
-        std::cout << "请选择操作：\n";
-        std::cout << "1. 查看我的授课列表\n";
-        std::cout << "2. 查看课程选课学生\n";
-        std::cout << "3. 录入/修改课程成绩\n";
-        std::cout << "4. 返回上级菜单\n";
-        std::cout << "请输入选项（1-4）：";
+        print( "请选择操作：\n");
+        print( "1. 查看我的授课列表\n");
+        print( "2. 查看课程选课学生\n");
+        print( "3. 录入/修改课程成绩\n");
+        print( "4. 返回上级菜单\n");
+        print( "请输入选项（1-4）：");
 
         std::cin >> choice;
 
         switch (choice) {
             case 1: {
                 auto courses = controller->getTeachingCourses(currentTeacherId);
-                std::cout << "\n授课列表：\n";
+                print( "\n授课列表：\n");
                 for (const auto& course : courses) {
                     std::cout << course.toString() << std::endl;
                 }
@@ -130,7 +130,7 @@ void ConsoleView::teacherLoopImpl() {
             case 4:
                 return;
             default:
-                std::cout << "无效选项，请重新输入！\n";
+                print( "无效选项，请重新输入！\n");
         }
     }
 }
@@ -138,21 +138,21 @@ void ConsoleView::teacherLoopImpl() {
 void ConsoleView::showCourseStudents() {
     auto courses = controller->getTeachingCourses(currentTeacherId);
     if (courses.empty()) {
-        std::cout << "您当前没有授课课程！\n";
+        print( "您当前没有授课课程！\n");
         return;
     }
 
-    std::cout << "\n请选择要查看的课程：\n";
+    print( "\n请选择要查看的课程：\n");
     for (size_t i = 0; i < courses.size(); ++i) {
         std::cout << i + 1 << ". " << courses[i].toString() << std::endl;
     }
-    std::cout << "请输入课程编号：";
+    print( "请输入课程编号：");
 
     int courseChoice;
     std::cin >> courseChoice;
 
     if (courseChoice < 1 || courseChoice > static_cast<int>(courses.size())) {
-        std::cout << "无效的课程编号！\n";
+        print( "无效的课程编号！\n");
         return;
     }
 
@@ -161,13 +161,13 @@ void ConsoleView::showCourseStudents() {
 
     std::cout << "\n课程 " << courseId << " 的选课学生列表：\n";
     if (students.empty()) {
-        std::cout << "该课程暂无学生选课。\n";
+        print( "该课程暂无学生选课。\n");
     } else {
         for (const auto& student : students) {
             double grade = student.getGrade(courseId);
             std::cout << "学号: " << student.id << " | 姓名: " << student.name << " | 成绩: " << grade;
             if (!student.hasGrade(courseId)) {
-                std::cout << " (未录入)";
+                print( " (未录入)");
             }
             std::cout << std::endl;
         }
@@ -177,21 +177,21 @@ void ConsoleView::showCourseStudents() {
 void ConsoleView::handleGradeInput() {
     auto courses = controller->getTeachingCourses(currentTeacherId);
     if (courses.empty()) {
-        std::cout << "您当前没有授课课程！\n";
+        print( "您当前没有授课课程！\n");
         return;
     }
 
-    std::cout << "\n请选择要录入成绩的课程：\n";
+    print( "\n请选择要录入成绩的课程：\n");
     for (size_t i = 0; i < courses.size(); ++i) {
         std::cout << i + 1 << ". " << courses[i].toString() << std::endl;
     }
-    std::cout << "请输入课程编号：";
+    print( "请输入课程编号：");
 
     int courseChoice;
     std::cin >> courseChoice;
 
     if (courseChoice < 1 || courseChoice > static_cast<int>(courses.size())) {
-        std::cout << "无效的课程编号！\n";
+        print( "无效的课程编号！\n");
         return;
     }
 
@@ -199,7 +199,7 @@ void ConsoleView::handleGradeInput() {
     auto students = controller->getCourseStudents(courseId);
 
     if (students.empty()) {
-        std::cout << "该课程暂无学生选课，无法录入成绩。\n";
+        print( "该课程暂无学生选课，无法录入成绩。\n");
         return;
     }
 
@@ -210,22 +210,22 @@ void ConsoleView::handleGradeInput() {
         if (student.hasGrade(courseId)) {
             std::cout << " [当前成绩: " << currentGrade << "]";
         }
-        std::cout << " 请输入新成绩：";
+        print(  " 请输入新成绩：");
 
         double newGrade;
         std::cin >> newGrade;
 
         if (controller->updateStudentGrade(student.id, courseId, newGrade)) {
-            std::cout << "成绩录入成功！\n";
+            print( "成绩录入成功！\n");
         } else {
-            std::cout << "成绩录入失败！\n";
+            print( "成绩录入失败！\n");
         }
     }
 }
 
 void ConsoleView::showCourseList() {
     const auto& courses = controller->getAvailableCourses();
-    std::cout << "\n可选课程列表：\n";
+    print( "\n可选课程列表：\n");
     for (const auto& course : courses) {
         std::cout << course.toString() << std::endl;
     }
@@ -233,25 +233,25 @@ void ConsoleView::showCourseList() {
 
 void ConsoleView::handleEnrollment() {
     std::string courseId;
-    std::cout << "请输入要选择的课程ID：";
+    print(  "请输入要选择的课程ID：");
     std::cin >> courseId;
 
     if (controller->enrollCourse(currentStudentId, courseId)) {
-        std::cout << "选课成功！\n";
+        print( "选课成功！\n");
     } else {
-        std::cout << "选课失败，请检查课程ID或是否已选该课程！\n";
+        print( "选课失败，请检查课程ID或是否已选该课程！\n");
     }
 }
 
 void ConsoleView::handleDropCourse() {
     std::string courseId;
-    std::cout << "请输入要退选的课程ID：";
+    print( "请输入要退选的课程ID：");
     std::cin >> courseId;
 
     if (controller->dropCourse(currentStudentId, courseId)) {
-        std::cout << "退课成功！\n";
+        print( "退课成功！\n");
     } else {
-        std::cout << "退课失败，请检查课程ID或是否已选该课程！\n";
+        print( "退课失败，请检查课程ID或是否已选该课程！\n");
     }
 }
 
@@ -271,13 +271,13 @@ auto ConsoleView::run() -> int {
                 teacherLoopImpl();
                 break;
             case 3: // 教学秘书
-                std::cout << "教学秘书功能正在开发中...\n";
+                print( "教学秘书功能正在开发中...\n");
                 break;
             case 0:
-                std::cout << "感谢使用选课系统，再见！\n";
+                print( "感谢使用选课系统，再见！\n");
                 return 0;
             default:
-                std::cout << "无效选项，请重新输入！\n";
+                print( "无效选项，请重新输入！\n");
         }
     }
     return 0;
