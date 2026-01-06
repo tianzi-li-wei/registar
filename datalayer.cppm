@@ -6,27 +6,23 @@ export class IDataAccess {
 public:
     virtual ~IDataAccess() = default;
 
-    // 获取所有课程
     virtual std::vector<Course> getAllCourses() = 0;
 
-    // 根据ID查学生
-    virtual std::optional<Student> getStudentById(const std::string& id) = 0;
 
-    // 根据ID查教师
+    virtual std::vector<Teacher> getAllTeachers() = 0;
+
+    virtual std::optional<Student> getStudentById(const std::string& id) = 0;
     virtual std::optional<Teacher> getTeacherById(const std::string& id) = 0;
 
-    // 获取教师授课列表
     virtual std::vector<Course> getTeachingCourses(const std::string& teacherId) = 0;
-
-    // 获取课程选课学生
     virtual std::vector<Student> getCourseStudents(const std::string& courseId) = 0;
 
-    // 更新学生成绩
     virtual bool updateStudentGrade(const std::string& studentId, const std::string& courseId, double grade) = 0;
-
-    // 选课操作
     virtual bool enrollStudent(const std::string& studentId, const std::string& courseId) = 0;
     virtual bool dropCourse(const std::string& studentId, const std::string& courseId) = 0;
+
+
+    virtual bool assignTeacher(const std::string& courseId, const std::string& teacherId) = 0;
 };
 
 export class MockDB : public IDataAccess {
@@ -39,6 +35,7 @@ public:
     MockDB();
 
     std::vector<Course> getAllCourses() override;
+    std::vector<Teacher> getAllTeachers() override; // 实现新增接口
     std::optional<Student> getStudentById(const std::string& id) override;
     std::optional<Teacher> getTeacherById(const std::string& id) override;
     std::vector<Course> getTeachingCourses(const std::string& teacherId) override;
@@ -46,85 +43,60 @@ public:
     bool updateStudentGrade(const std::string& studentId, const std::string& courseId, double grade) override;
     bool enrollStudent(const std::string& studentId, const std::string& courseId) override;
     bool dropCourse(const std::string& studentId, const std::string& courseId) override;
+    bool assignTeacher(const std::string& courseId, const std::string& teacherId) override; // 实现新增接口
 };
 
 MockDB::MockDB() {
-    // 初始化教师数据
-    teachers = {
-        Teacher("T001", "李教授"),
-        Teacher("T002", "王教授")
-    };
-
-    // 初始化课程数据（关联教师）
+    teachers = { Teacher("T001", "李教授"), Teacher("T002", "王教授") };
+    // 初始状态把 MATH101 的老师置空，方便测试排课
     courses = {
         Course("CS101", "程序设计基础", 3, 30, "T001"),
         Course("CS102", "数据结构", 4, 25, "T001"),
-        Course("MATH101", "高等数学", 4, 40, "T002")
+        Course("MATH101", "高等数学", 4, 40, "") // 待安排
     };
+    students = { Student("S001", "张三"), Student("S002", "李四") };
 
-    students = {
-        Student("S001", "张三"),
-        Student("S002", "李四")
-    };
+    // 初始化关系
+    teachers[0].teachingCourseIds.push_back("CS101");
+    teachers[0].teachingCourseIds.push_back("CS102");
 
-    // 设置教师授课关系
-    teachers[0].addTeachingCourse("CS101");
-    teachers[0].addTeachingCourse("CS102");
-    teachers[1].addTeachingCourse("MATH101");
-
-    // 初始化一些选课记录
+    // 初始化选课
     enrollStudent("S001", "CS101");
-    enrollStudent("S001", "CS102");
-    enrollStudent("S002", "CS101");
-    enrollStudent("S002", "MATH101");
 }
 
-std::vector<Course> MockDB::getAllCourses() {
-    return courses;
-}
+std::vector<Course> MockDB::getAllCourses() { return courses; }
+
+// [新增]
+std::vector<Teacher> MockDB::getAllTeachers() { return teachers; }
 
 std::optional<Student> MockDB::getStudentById(const std::string& id) {
-    for (auto& student : students) {
-        if (student.id == id) {
-            return student;
-        }
-    }
+    for (auto& s : students) if (s.id == id) return s;
     return std::nullopt;
 }
 
 std::optional<Teacher> MockDB::getTeacherById(const std::string& id) {
-    for (auto& teacher : teachers) {
-        if (teacher.id == id) {
-            return teacher;
-        }
-    }
+    for (auto& t : teachers) if (t.id == id) return t;
     return std::nullopt;
 }
 
 std::vector<Course> MockDB::getTeachingCourses(const std::string& teacherId) {
     std::vector<Course> result;
-    for (const auto& course : courses) {
-        if (course.getTeacherId() == teacherId) {
-            result.push_back(course);
-        }
-    }
+    // 直接访问 teacherId，不使用 getter
+    for (const auto& c : courses) if (c.teacherId == teacherId) result.push_back(c);
     return result;
 }
 
 std::vector<Student> MockDB::getCourseStudents(const std::string& courseId) {
     std::vector<Student> result;
-    for (const auto& student : students) {
-        if (student.isEnrolled(courseId)) {
-            result.push_back(student);
-        }
-    }
+    for (const auto& s : students) if (s.isEnrolled(courseId)) result.push_back(s);
     return result;
 }
 
 bool MockDB::updateStudentGrade(const std::string& studentId, const std::string& courseId, double grade) {
-    for (auto& student : students) {
-        if (student.id == studentId && student.isEnrolled(courseId)) {
-            student.setGrade(courseId, grade);
+    for (auto& s : students) {
+        if (s.id == studentId && s.isEnrolled(courseId)) {
+            // 直接访问 public 成员，不使用 setter
+            s.courseGrades[courseId] = grade;
             return true;
         }
     }
@@ -132,30 +104,24 @@ bool MockDB::updateStudentGrade(const std::string& studentId, const std::string&
 }
 
 bool MockDB::enrollStudent(const std::string& studentId, const std::string& courseId) {
-    // 查找学生
-    auto studentOpt = getStudentById(studentId);
-    if (!studentOpt) return false;
+    auto sOpt = getStudentById(studentId);
+    if (!sOpt) return false;
 
-    // 查找课程
+    // 使用指针查找，以便修改
     Course* targetCourse = nullptr;
-    for (auto& course : courses) {
-        if (course.id == courseId) {
-            targetCourse = &course;
-            break;
-        }
+    for (auto& c : courses) {
+        if (c.id == courseId) { targetCourse = &c; break; }
     }
-    if (!targetCourse || targetCourse->isFull()) return false;
 
-    // 检查是否已选
-    if (studentOpt->isEnrolled(courseId)) return false;
+    if (!targetCourse || targetCourse->isFull() || sOpt->isEnrolled(courseId)) return false;
 
-    // 执行选课
-    targetCourse->enrollStudent();
+    // 执行修改
+    targetCourse->enroll();
 
-    // 更新学生选课记录
-    for (auto& student : students) {
-        if (student.id == studentId) {
-            student.addCourse(courseId);
+    for (auto& s : students) {
+        if (s.id == studentId) {
+            s.enrolledCourseIds.push_back(courseId);
+            s.courseGrades[courseId] = 0.0;
             return true;
         }
     }
@@ -163,32 +129,47 @@ bool MockDB::enrollStudent(const std::string& studentId, const std::string& cour
 }
 
 bool MockDB::dropCourse(const std::string& studentId, const std::string& courseId) {
-    // 查找学生
-    auto studentOpt = getStudentById(studentId);
-    if (!studentOpt) return false;
+    auto sOpt = getStudentById(studentId);
+    if (!sOpt || !sOpt->isEnrolled(courseId)) return false;
 
-    // 查找课程
     Course* targetCourse = nullptr;
-    for (auto& course : courses) {
-        if (course.id == courseId) {
-            targetCourse = &course;
-            break;
-        }
+    for (auto& c : courses) {
+        if (c.id == courseId) { targetCourse = &c; break; }
     }
-    if (!targetCourse) return false;
+    if (targetCourse) targetCourse->drop();
 
-    // 检查是否已选
-    if (!studentOpt->isEnrolled(courseId)) return false;
-
-    // 执行退课
-    targetCourse->dropStudent();
-
-    // 更新学生选课记录
-    for (auto& student : students) {
-        if (student.id == studentId) {
-            student.removeCourse(courseId);
+    for (auto& s : students) {
+        if (s.id == studentId) {
+            std::erase(s.enrolledCourseIds, courseId);
+            s.courseGrades.erase(courseId);
             return true;
         }
     }
     return false;
+}
+
+
+bool MockDB::assignTeacher(const std::string& courseId, const std::string& teacherId) {
+
+    Course* targetCourse = nullptr;
+    for (auto& c : courses) {
+        if (c.id == courseId) { targetCourse = &c; break; }
+    }
+    if (!targetCourse) return false;
+
+
+    Teacher* targetTeacher = nullptr;
+    for (auto& t : teachers) {
+        if (t.id == teacherId) { targetTeacher = &t; break; }
+    }
+    if (!targetTeacher) return false;
+
+
+    targetCourse->teacherId = teacherId;
+
+
+    if (!targetTeacher->isTeaching(courseId)) {
+        targetTeacher->teachingCourseIds.push_back(courseId);
+    }
+    return true;
 }

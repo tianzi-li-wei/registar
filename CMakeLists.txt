@@ -18,9 +18,9 @@ set(MODULE_INTERFACE_FILES
     #math.cppm                             # 模块接口单元
     datalayer.cppm
     logiclayer.cppm
-    presentation.cppm
     registrar.cppm
     domain.cppm
+    presentation.cppm
 )
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})
 target_sources(registar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
