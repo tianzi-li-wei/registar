@@ -8,7 +8,7 @@ set(CMAKE_CXX_MODULE_STD ON)
 project(registar LANGUAGES CXX)
 
 # set(MODULE_LIB_DIR1 /opt/utils/modules)  # 模块库的目录的设置
-add_executable(registar
+add_executable(registrar
     #math.cpp                              # 模块实现单元
     main.cpp
 )
@@ -23,16 +23,18 @@ set(MODULE_INTERFACE_FILES
     presentation.cppm
 )
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})
-target_sources(registar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
+target_sources(registrar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
     BASE_DIRS                              # 配置BASE_DIRS，用于组织构建输出目录，以便构建不同目录中(同名的)模块文件.
         #${MODULE_LIB_DIR1}
         ${CMAKE_CURRENT_SOURCE_DIR}
     FILES ${MODULE_INTERFACE_FILES}
 )
-target_compile_features(registar PRIVATE cxx_std_23)
+target_compile_features(registrar PRIVATE cxx_std_23)
 
-
-
+target_include_directories(registrar PRIVATE
+    /usr/include)
+target_link_libraries(registrar PRIVATE
+ /usr/lib/libpqxx.so   )
 
 
 
